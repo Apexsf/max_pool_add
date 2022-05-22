@@ -2,7 +2,7 @@
 
 ## 背景
 
-最近找实习，方向是模型部署，算法底层推理框架、模型加速，接到某公司的题目, 要求如下:
+最近找实习，接到某公司的题目, 要求如下:
 
 >  implement a small compute graph which consists of a max_pooling op and an element-wise add (support broadcast) op in C/C++.
 >  Formula: **dst[32,64,56,56] = add(max_pooling(src1[32,64,112,112]), src2[32,1,56,56])**
