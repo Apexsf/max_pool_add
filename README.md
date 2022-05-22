@@ -1,21 +1,23 @@
-# 使用C++实现一个简单的计算图
+# 使用C++实现 ` maxpool + add ` 的计算图
 
 ## 背景
 
 最近找实习，方向是模型部署，算法底层推理框架、模型加速，接到某公司的题目, 要求如下:
 
 >  implement a small compute graph which consists of a max_pooling op and an element-wise add (support broadcast) op in C/C++.
-> Formula: **dst[32,64,56,56] = add(max_pooling(src1[32,64,112,112]), src2[32,1,56,56])**
+>  Formula: **dst[32,64,56,56] = add(max_pooling(src1[32,64,112,112]), src2[32,1,56,56])**
 >
-> - `max_pooling op is fixed to kernel [3,3], pad [1,1], stride [2, 2], src1 and src2 are the two input tensors, dst is the output tensor.`
+>  - `max_pooling op is fixed to kernel [3,3], pad [1,1], stride [2, 2], src1 and src2 are the two input tensors, dst is the output tensor.`
 >
-> -  Forward only.
+>  - Forward only.
+>
+>  - Unit testing is required to verify the results
 
-- 即实现 `maxpool` 和 `element-wise add` 操作，需要支持`broadcast`.  `maxpool`算子的`kernel / stride /pad` 参数固定. 
+即实现 `maxpool` 和 `element-wise add` 操作，需要支持`broadcast`.  `maxpool`算子的`kernel / stride / pad` 参数固定. 
 
-- 加分项是`SIMD`/ `openMP`/ `Cache locality`优化.
+加分项是`SIMD`/ `openMP`/ `Cache locality`优化.
 
-  这里记录一下我的实现， 地址在 [github](https://github.com/Apexsf/max_pool_add)
+这里记录一下我的实现， 地址在 [github](https://github.com/Apexsf/max_pool_add)
 
 ## 实现
 
@@ -58,7 +60,7 @@
 
 ### Details
 
-### 序列化和反序列化
+#### 序列化和反序列化
 
 - 使用 python 脚本进行序列化时，在张量前 `append` `4` 个维度信息，即`meta`数据：
 
@@ -84,7 +86,7 @@
   }
   ```
 
-### 定义`Tensor`类
+#### 定义`Tensor`类
 
 ```c++
 template<typename T>
@@ -195,7 +197,7 @@ struct Tensor {
 
 - 注意`H`和`W`在最后两个维度，这样可以使得这两个维度的数据在内存空间位置中相邻，可以提升后续`maxpool`操作的`cache locality`性能， 提高`cache`命中率.
 
-### maxpool 的实现
+#### maxpool 的实现
 
 -  maxpool 可以通过直接的多层`for`循环实现, `darknet`和`caffe`都是使用这种方法， 另外也可以通过`im2col`加上`argmax`来实现。
 -  这里主要采用`for`循环，以及使用`openmp`加速的方案.
@@ -288,7 +290,7 @@ Tensor<T> max_pool(Tensor<T>& src) {
   }
   ```
 
-### `add` 的实现
+#### `add` 的实现
 
 - 两个向量的`elem-wise add`需要先进行维度的判断:
 
@@ -524,4 +526,5 @@ Tensor<T> max_pool(Tensor<T>& src) {
 
 
 ## 后续
+
   提交代码实现后，结合之前的面试表现很快就获得了offer， 但是由于一些原因，选择了另一家，还是感谢可以获得这样一次宝贵的机会。
